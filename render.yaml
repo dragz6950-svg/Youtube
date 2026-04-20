@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: dragz-processor
+    name: Youtube
     env: python
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python app.py"
