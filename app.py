@@ -21,9 +21,15 @@ def process_video():
 
     # Download video
     ydl_opts = {
-        'format': 'mp4',
-        'outtmpl': raw_path,
-        'quiet': True
+    'format': 'mp4',
+    'outtmpl': raw_path,
+    'quiet': True,
+    'cookiefile': None,
+    'extractor_args': {'youtube': {'player_client': ['android']}},
+    'http_headers': {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36'
+    }
+}
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([f"https://www.youtube.com/watch?v={video_id}"])
