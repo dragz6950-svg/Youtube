@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
-import yt_dlp
 import subprocess
 import os
 import uuid
 import imageio_ffmpeg
+import requests
 
 app = Flask(__name__)
 ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
@@ -11,26 +11,20 @@ ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
 @app.route('/process', methods=['POST'])
 def process_video():
     data = request.json
-    video_id = data.get('video_id')
+    video_url = data.get('video_url')
     title = data.get('title', 'video')
-    
+
     unique_id = str(uuid.uuid4())[:8]
     raw_path = f"/tmp/{unique_id}_raw.mp4"
     edited_path = f"/tmp/{unique_id}_edited.mp4"
 
-    ydl_opts = {
-        'format': 'mp4',
-        'outtmpl': raw_path,
-        'quiet': True,
-        'extractor_args': {'youtube': {'player_client': ['android']}},
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36'
-        }
-    }
+    # Download video from Pexels
+    response = requests.get(video_url, stream=True)
+    with open(raw_path, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            f.write(chunk)
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([f"https://www.youtube.com/watch?v={video_id}"])
-
+    # Edit with FFmpeg (flip + speed)
     subprocess.run([
         ffmpeg_path, '-i', raw_path,
         '-vf', 'hflip',
@@ -43,7 +37,6 @@ def process_video():
     return jsonify({
         'status': 'success',
         'edited_path': edited_path,
-        'video_id': video_id,
         'title': title
     })
 
