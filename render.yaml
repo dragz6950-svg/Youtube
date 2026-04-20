@@ -2,6 +2,6 @@ services:
   - type: web
     name: dragz-processor
     env: python
-    buildCommand: "apt-get install -y ffmpeg && pip install -r requirements.txt"
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "python app.py"
     plan: free
