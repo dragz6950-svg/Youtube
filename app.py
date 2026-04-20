@@ -3,8 +3,11 @@ import yt_dlp
 import subprocess
 import os
 import uuid
+import imageio_ffmpeg
 
 app = Flask(__name__)
+
+ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
 
 @app.route('/process', methods=['POST'])
 def process_video():
@@ -27,7 +30,7 @@ def process_video():
 
     # Edit video with FFmpeg (speed up, flip, color filter)
     subprocess.run([
-        'ffmpeg', '-i', raw_path,
+        ffmpeg_path, '-i', raw_path,
         '-vf', 'hflip,colorchannelmixer=1.1:0:0:0:0:1.1:0:0:0:0:1.1:0',
         '-filter:v', 'setpts=0.95*PTS',
         '-filter:a', 'atempo=1.05',
@@ -50,4 +53,5 @@ def health():
     return jsonify({'status': 'ok'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
